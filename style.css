@@ -1,0 +1,381 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    overflow: hidden;
+    background: #e8e8e8;
+}
+
+#webgl {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+#loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 24px;
+    color: #666;
+    z-index: 100;
+    transition: opacity 0.5s;
+}
+
+#loading.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#instructions {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    color: #888;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    border-radius: 20px;
+    z-index: 10;
+}
+
+/* 虚拟方向盘控制 */
+#virtual-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: none;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 20px 25px 30px;
+    touch-action: none;
+    pointer-events: none;
+}
+
+#virtual-controls > * {
+    pointer-events: auto;
+}
+
+/* 移动端显示虚拟控制 */
+@media (max-width: 768px), (pointer: coarse) {
+    #virtual-controls {
+        display: flex;
+    }
+    
+    #instructions {
+        bottom: auto;
+        top: 20px;
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+    
+    #mobile-preview-btn {
+        display: none;
+    }
+}
+
+/* 方向盘 */
+#steering-wheel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+#wheel-outer {
+    width: 130px;
+    height: 130px;
+    background: linear-gradient(145deg, #f0f0f0, #d0d0d0);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.3),
+        inset 0 2px 10px rgba(255, 255, 255, 0.8),
+        inset 0 -2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    touch-action: none;
+}
+
+#wheel-inner {
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.3),
+        inset 0 2px 5px rgba(255, 255, 255, 0.3);
+    transition: transform 0.05s ease-out;
+}
+
+#wheel-grip {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(145deg, #333, #1a1a1a);
+    border-radius: 50%;
+    box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.2);
+}
+
+#wheel-indicator {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 15px;
+    background: #e74c3c;
+    border-radius: 2px;
+}
+
+#steering-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* 油门刹车踏板 */
+#pedals {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pedal {
+    width: 80px;
+    height: 70px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.1s ease;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.pedal-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.pedal-text {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+#pedal-gas {
+    background: linear-gradient(145deg, #2ecc71, #27ae60);
+    color: #fff;
+}
+
+#pedal-gas:active,
+#pedal-gas.active {
+    background: linear-gradient(145deg, #27ae60, #1e8449);
+    transform: scale(0.95);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+#pedal-brake {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    color: #fff;
+}
+
+#pedal-brake:active,
+#pedal-brake.active {
+    background: linear-gradient(145deg, #c0392b, #a93226);
+    transform: scale(0.95);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* 手机预览按钮 */
+#mobile-preview-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+#mobile-preview-btn:hover {
+    background: #333;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+#mobile-preview-btn svg {
+    flex-shrink: 0;
+}
+
+/* 手机预览遮罩层 */
+#mobile-preview-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+#mobile-preview-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 手机预览容器 */
+#mobile-preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+#mobile-preview-overlay.active #mobile-preview-container {
+    transform: scale(1);
+}
+
+/* 手机框架 */
+#mobile-frame {
+    width: 375px;
+    height: 812px;
+    background: #1a1a1a;
+    border-radius: 50px;
+    padding: 12px;
+    position: relative;
+    box-shadow: 
+        0 0 0 3px #333,
+        0 20px 50px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 2px #2a2a2a;
+}
+
+/* 刘海 */
+#mobile-notch {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 30px;
+    background: #1a1a1a;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+}
+
+#mobile-notch::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+}
+
+#mobile-notch::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 25px;
+    width: 10px;
+    height: 10px;
+    background: #333;
+    border-radius: 50%;
+}
+
+/* iframe */
+#mobile-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 38px;
+    background: #e8e8e8;
+}
+
+/* 底部横条 */
+#mobile-home-bar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 5px;
+    background: #fff;
+    border-radius: 3px;
+    z-index: 10;
+}
+
+/* 关闭按钮 */
+#close-preview-btn {
+    padding: 12px 24px;
+    background: #fff;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+#close-preview-btn:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+
+/* 响应式 - 小屏幕缩小手机框架 */
+@media (max-height: 900px) {
+    #mobile-frame {
+        transform: scale(0.85);
+    }
+}
+
+@media (max-height: 750px) {
+    #mobile-frame {
+        transform: scale(0.7);
+    }
+}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bruno Simon - Creative Developer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="webgl"></canvas>
+    <div id="loading">Loading...</div>
+    <div id="instructions">使用方向键或 WASD 驾驶小车 | 靠近菜单可互动</div>
+    
+    <!-- 虚拟方向盘控制 (移动端显示) -->
+    <div id="virtual-controls">
+        <!-- 左侧方向盘 -->
+        <div id="steering-wheel">
+            <div id="wheel-outer">
+                <div id="wheel-inner">
+                    <div id="wheel-grip"></div>
+                </div>
+                <div id="wheel-indicator"></div>
+            </div>
+            <div id="steering-label">方向盘</div>
+        </div>
+        
+        <!-- 右侧油门刹车 -->
+        <div id="pedals">
+            <button class="pedal" id="pedal-gas">
+                <span class="pedal-icon">▲</span>
+                <span class="pedal-text">油门</span>
+            </button>
+            <button class="pedal" id="pedal-brake">
+                <span class="pedal-icon">▼</span>
+                <span class="pedal-text">倒车</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 手机预览按钮 -->
+    <button id="mobile-preview-btn" title="手机预览">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12" y2="18"></line>
+        </svg>
+        <span>手机预览</span>
+    </button>
+    
+    <!-- 手机预览容器 -->
+    <div id="mobile-preview-overlay">
+        <div id="mobile-preview-container">
+            <div id="mobile-frame">
+                <div id="mobile-notch"></div>
+                <iframe id="mobile-iframe" src="about:blank"></iframe>
+                <div id="mobile-home-bar"></div>
+            </div>
+            <button id="close-preview-btn">✕ 关闭预览</button>
+        </div>
+    </div>
+    
+    <script>
+        // 手机预览功能
+        const previewBtn = document.getElementById('mobile-preview-btn');
+        const overlay = document.getElementById('mobile-preview-overlay');
+        const closeBtn = document.getElementById('close-preview-btn');
+        const iframe = document.getElementById('mobile-iframe');
+        
+        previewBtn.addEventListener('click', () => {
+            overlay.classList.add('active');
+            iframe.src = window.location.href;
+        });
+        
+        closeBtn.addEventListener('click', () => {
+            overlay.classList.remove('active');
+            iframe.src = 'about:blank';
+        });
+        
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.remove('active');
+                iframe.src = 'about:blank';
+            }
+        });
+    </script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
