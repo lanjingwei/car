@@ -5,7 +5,7 @@ import * as THREE from 'three';
 // ============================================
 const canvas = document.getElementById('webgl');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xe8e8e8);
+scene.background = new THREE.Color(0xf5a070);
 
 // Sizes
 const sizes = {
@@ -133,30 +133,43 @@ const menuColors = [
 ];
 
 // ============================================
-// Ground - Large soft gray tiles
+// Ground - Orange gradient
 // ============================================
 function createGround() {
-    const tileSize = 4;
-    const gridSize = 15;
-    const gap = 0.1;
-    
+    const groundSize = 150;
     const groundGroup = new THREE.Group();
     
-    for (let x = -gridSize; x <= gridSize; x++) {
-        for (let z = -gridSize; z <= gridSize; z++) {
-            const tileGeometry = new THREE.BoxGeometry(tileSize - gap, 0.3, tileSize - gap);
-            const shade = 0.75 + Math.random() * 0.1;
-            const tileMaterial = new THREE.MeshStandardMaterial({
-                color: new THREE.Color(shade, shade, shade),
-                roughness: 0.9,
-                metalness: 0.0
-            });
-            const tile = new THREE.Mesh(tileGeometry, tileMaterial);
-            tile.position.set(x * tileSize, -0.15, z * tileSize);
-            tile.receiveShadow = true;
-            groundGroup.add(tile);
-        }
-    }
+    // 创建渐变纹理
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    
+    // 橙色渐变 - 从浅橙到深橙
+    const gradient = ctx.createLinearGradient(0, 0, 512, 512);
+    gradient.addColorStop(0, '#ffb88c');    // 浅橙色
+    gradient.addColorStop(0.5, '#f5a070');  // 中橙色
+    gradient.addColorStop(1, '#e8956a');    // 深橙色
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 512, 512);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    
+    // 主地面
+    const groundGeo = new THREE.PlaneGeometry(groundSize, groundSize);
+    const groundMat = new THREE.MeshStandardMaterial({
+        map: texture,
+        roughness: 0.9,
+        metalness: 0.0
+    });
+    const groundPlane = new THREE.Mesh(groundGeo, groundMat);
+    groundPlane.rotation.x = -Math.PI / 2;
+    groundPlane.position.y = 0;
+    groundPlane.receiveShadow = true;
+    groundGroup.add(groundPlane);
     
     return groundGroup;
 }
@@ -977,167 +990,60 @@ function animate() {
 animate();
 
 // ============================================
-// Virtual Steering Wheel Controls (Mobile)
+// Virtual Button Controls (Mobile)
 // ============================================
 function setupVirtualControls() {
-    const wheelOuter = document.getElementById('wheel-outer');
-    const wheelInner = document.getElementById('wheel-inner');
+    const btnLeft = document.getElementById('btn-left');
+    const btnRight = document.getElementById('btn-right');
     const pedalGas = document.getElementById('pedal-gas');
     const pedalBrake = document.getElementById('pedal-brake');
     
-    if (!wheelOuter) return;
+    if (!btnLeft) return;
     
-    let steeringAngle = 0;
-    let isDragging = false;
-    let startAngle = 0;
-    let currentAngle = 0;
-    const maxAngle = 60; // 最大转向角度
-    
-    // 计算触摸点相对于方向盘中心的角度
-    function getAngle(touch, element) {
-        const rect = element.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const x = touch.clientX - centerX;
-        const y = touch.clientY - centerY;
-        return Math.atan2(y, x) * (180 / Math.PI);
-    }
-    
-    // 方向盘触摸开始
-    wheelOuter.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        isDragging = true;
-        const touch = e.touches[0];
-        startAngle = getAngle(touch, wheelOuter) - currentAngle;
-    }, { passive: false });
-    
-    // 方向盘触摸移动
-    wheelOuter.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        
-        const touch = e.touches[0];
-        let angle = getAngle(touch, wheelOuter) - startAngle;
-        
-        // 限制角度范围
-        angle = Math.max(-maxAngle, Math.min(maxAngle, angle));
-        currentAngle = angle;
-        
-        // 更新方向盘视觉旋转
-        wheelInner.style.transform = `rotate(${angle}deg)`;
-        
-        // 根据角度设置转向
-        const threshold = 10;
-        if (angle < -threshold) {
-            keys.left = true;
-            keys.right = false;
-        } else if (angle > threshold) {
-            keys.right = true;
-            keys.left = false;
-        } else {
-            keys.left = false;
-            keys.right = false;
-        }
-    }, { passive: false });
-    
-    // 方向盘触摸结束
-    function endSteering() {
-        isDragging = false;
-        // 方向盘回正动画
-        currentAngle = 0;
-        wheelInner.style.transform = 'rotate(0deg)';
-        keys.left = false;
-        keys.right = false;
-    }
-    
-    wheelOuter.addEventListener('touchend', endSteering);
-    wheelOuter.addEventListener('touchcancel', endSteering);
-    
-    // 鼠标支持（桌面测试）
-    let isMouseDragging = false;
-    
-    wheelOuter.addEventListener('mousedown', (e) => {
-        isMouseDragging = true;
-        const rect = wheelOuter.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI) - currentAngle;
-    });
-    
-    document.addEventListener('mousemove', (e) => {
-        if (!isMouseDragging) return;
-        
-        const rect = wheelOuter.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        let angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI) - startAngle;
-        
-        angle = Math.max(-maxAngle, Math.min(maxAngle, angle));
-        currentAngle = angle;
-        wheelInner.style.transform = `rotate(${angle}deg)`;
-        
-        const threshold = 10;
-        if (angle < -threshold) {
-            keys.left = true;
-            keys.right = false;
-        } else if (angle > threshold) {
-            keys.right = true;
-            keys.left = false;
-        } else {
-            keys.left = false;
-            keys.right = false;
-        }
-    });
-    
-    document.addEventListener('mouseup', () => {
-        if (isMouseDragging) {
-            isMouseDragging = false;
-            currentAngle = 0;
-            wheelInner.style.transform = 'rotate(0deg)';
-            keys.left = false;
-            keys.right = false;
-        }
-    });
-    
-    // 油门踏板
-    function setupPedal(pedal, keyType) {
-        pedal.addEventListener('touchstart', (e) => {
+    // 通用按钮设置函数
+    function setupButton(btn, keyType) {
+        btn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             keys[keyType] = true;
-            pedal.classList.add('active');
+            btn.classList.add('active');
         }, { passive: false });
         
-        pedal.addEventListener('touchend', (e) => {
+        btn.addEventListener('touchend', (e) => {
             e.preventDefault();
             keys[keyType] = false;
-            pedal.classList.remove('active');
+            btn.classList.remove('active');
         }, { passive: false });
         
-        pedal.addEventListener('touchcancel', () => {
+        btn.addEventListener('touchcancel', () => {
             keys[keyType] = false;
-            pedal.classList.remove('active');
+            btn.classList.remove('active');
         });
         
         // 鼠标支持
-        pedal.addEventListener('mousedown', (e) => {
+        btn.addEventListener('mousedown', (e) => {
             e.preventDefault();
             keys[keyType] = true;
-            pedal.classList.add('active');
+            btn.classList.add('active');
         });
         
-        pedal.addEventListener('mouseup', () => {
+        btn.addEventListener('mouseup', () => {
             keys[keyType] = false;
-            pedal.classList.remove('active');
+            btn.classList.remove('active');
         });
         
-        pedal.addEventListener('mouseleave', () => {
+        btn.addEventListener('mouseleave', () => {
             keys[keyType] = false;
-            pedal.classList.remove('active');
+            btn.classList.remove('active');
         });
     }
     
-    setupPedal(pedalGas, 'forward');
-    setupPedal(pedalBrake, 'backward');
+    // 设置转向按钮
+    setupButton(btnLeft, 'left');
+    setupButton(btnRight, 'right');
+    
+    // 设置油门刹车
+    setupButton(pedalGas, 'forward');
+    setupButton(pedalBrake, 'backward');
     
     // 阻止默认触摸行为
     const virtualControls = document.getElementById('virtual-controls');

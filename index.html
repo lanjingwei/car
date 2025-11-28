@@ -11,17 +11,18 @@
     <div id="loading">Loading...</div>
     <div id="instructions">使用方向键或 WASD 驾驶小车 | 靠近菜单可互动</div>
     
-    <!-- 虚拟方向盘控制 (移动端显示) -->
+    <!-- 虚拟控制 (移动端显示) -->
     <div id="virtual-controls">
-        <!-- 左侧方向盘 -->
-        <div id="steering-wheel">
-            <div id="wheel-outer">
-                <div id="wheel-inner">
-                    <div id="wheel-grip"></div>
-                </div>
-                <div id="wheel-indicator"></div>
-            </div>
-            <div id="steering-label">方向盘</div>
+        <!-- 左侧转向按钮 -->
+        <div id="steering-btns">
+            <button class="steer-btn" id="btn-left">
+                <span class="steer-icon">◀</span>
+                <span class="steer-text">左转</span>
+            </button>
+            <button class="steer-btn" id="btn-right">
+                <span class="steer-icon">▶</span>
+                <span class="steer-text">右转</span>
+            </button>
         </div>
         
         <!-- 右侧油门刹车 -->
