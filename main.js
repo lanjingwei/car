@@ -16,8 +16,8 @@ const sizes = {
 // ============================================
 // Camera - Isometric-like perspective
 // ============================================
-const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 1000);
-camera.position.set(25, 25, 25);
+const camera = new THREE.PerspectiveCamera(30, sizes.width / sizes.height, 0.1, 1000);
+camera.position.set(40, 40, 40);
 camera.lookAt(0, 0, 0);
 
 // ============================================
@@ -238,12 +238,65 @@ function createJeep() {
     aPillarR.position.z = -0.6;
     jeep.add(aPillarR);
     
-    // Windshield
+    // Windshield (前挡风玻璃)
     const windshieldGeo = new THREE.BoxGeometry(0.05, 0.5, 1.1);
     const windshield = new THREE.Mesh(windshieldGeo, glassMatl);
     windshield.position.set(0.45, 1.15, 0);
     windshield.rotation.z = -0.2;
     jeep.add(windshield);
+    
+    // Side windows (左右侧窗玻璃)
+    const sideWindowGeo = new THREE.BoxGeometry(0.6, 0.4, 0.04);
+    
+    // 左侧窗
+    const sideWindowL = new THREE.Mesh(sideWindowGeo, glassMatl);
+    sideWindowL.position.set(-0.05, 1.2, 0.72);
+    jeep.add(sideWindowL);
+    
+    // 右侧窗
+    const sideWindowR = new THREE.Mesh(sideWindowGeo, glassMatl);
+    sideWindowR.position.set(-0.05, 1.2, -0.72);
+    jeep.add(sideWindowR);
+    
+    // Rear window (后窗玻璃)
+    const rearWindowGeo = new THREE.BoxGeometry(0.04, 0.35, 0.9);
+    const rearWindow = new THREE.Mesh(rearWindowGeo, glassMatl);
+    rearWindow.position.set(-0.82, 1.18, 0);
+    jeep.add(rearWindow);
+    
+    // Window frames (窗框)
+    const windowFrameMat = matteDarkGray;
+    
+    // 左窗框
+    const frameTopGeoL = new THREE.BoxGeometry(0.65, 0.04, 0.04);
+    const frameTopL = new THREE.Mesh(frameTopGeoL, windowFrameMat);
+    frameTopL.position.set(-0.05, 1.42, 0.72);
+    jeep.add(frameTopL);
+    
+    const frameBottomL = new THREE.Mesh(frameTopGeoL, windowFrameMat);
+    frameBottomL.position.set(-0.05, 0.98, 0.72);
+    jeep.add(frameBottomL);
+    
+    // 右窗框
+    const frameTopR = frameTopL.clone();
+    frameTopR.position.z = -0.72;
+    jeep.add(frameTopR);
+    
+    const frameBottomR = frameBottomL.clone();
+    frameBottomR.position.z = -0.72;
+    jeep.add(frameBottomR);
+    
+    // 前窗三角窗 (小三角玻璃)
+    const triangleWindowGeo = new THREE.BoxGeometry(0.2, 0.3, 0.03);
+    const triangleWindowL = new THREE.Mesh(triangleWindowGeo, glassMatl);
+    triangleWindowL.position.set(0.28, 1.15, 0.72);
+    triangleWindowL.rotation.z = -0.15;
+    jeep.add(triangleWindowL);
+    
+    const triangleWindowR = new THREE.Mesh(triangleWindowGeo, glassMatl);
+    triangleWindowR.position.set(0.28, 1.15, -0.72);
+    triangleWindowR.rotation.z = -0.15;
+    jeep.add(triangleWindowR);
     
     // Top frame - roll cage
     const rollCageGeo = new THREE.BoxGeometry(1.1, 0.06, 0.06);
@@ -861,9 +914,9 @@ function updateCar() {
 // Camera Follow
 // ============================================
 function updateCamera() {
-    // Camera follows behind the car
-    const cameraDistance = 18;
-    const cameraHeight = 15;
+    // Camera follows behind the car - higher and further
+    const cameraDistance = 35;
+    const cameraHeight = 28;
     
     // 相机在车后方 (车头 +X 方向的反方向)
     const targetX = jeep.position.x - Math.cos(jeep.rotation.y) * cameraDistance;
